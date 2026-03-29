@@ -1,0 +1,32 @@
+{
+  "name": "Style Court — Your Fashion Monarchy",
+  "short_name": "Style Court",
+  "description": "AI-powered fashion advisor. Get outfit critiques, style ratings, and shop curated looks.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060606",
+  "theme_color": "#c8a45a",
+  "orientation": "portrait-primary",
+  "categories": ["lifestyle", "shopping", "fashion"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

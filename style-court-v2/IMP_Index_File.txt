@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Style Court — Your Personal Fashion Monarchy</title>
+<meta name="description" content="Style Court — AI-powered fashion advisor. Get outfit critiques, style ratings, and shop curated looks from Amazon, ASOS & Myntra."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Mono:wght@300;400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #060606;
+  --surface: #0e0e0e;
+  --surface2: #161616;
+  --surface3: #1e1e1e;
+  --border: #242424;
+  --border2: #2e2e2e;
+  --gold: #c8a45a;
+  --gold-light: #e2c27e;
+  --gold-dim: rgba(200,164,90,0.15);
+  --text: #ede9e1;
+  --text2: #a09890;
+  --text3: #5a5450;
+  --accent-amazon: #f90;
+  --accent-asos: #2d6ee0;
+  --accent-myntra: #ff3f6c;
+  --radius: 2px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Jost', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* Grain overlay */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:9999; opacity:0.5;
+}
+
+/* ── HERO / NAV ── */
+.site-header {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 40px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(6,6,6,0.92);
+  backdrop-filter: blur(12px);
+}
+.site-header::after {
+  content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%);
+}
+.logo {
+  display:flex; align-items:center; gap:12px;
+  text-decoration:none;
+}
+.logo-crown { font-size:22px; line-height:1; }
+.logo-text {
+  font-family: 'Playfair Display', serif;
+  font-size:18px; font-weight:700; letter-spacing:0.12em;
+  color: var(--gold-light);
+}
+.logo-sub {
+  font-family:'DM Mono', monospace;
+  font-size:8px; color:var(--text3); letter-spacing:0.2em;
+  display:block; margin-top:2px;
+}
+nav { display:flex; gap:32px; align-items:center; }
+nav a {
+  font-family:'DM Mono', monospace; font-size:10px; letter-spacing:0.2em;
+  color:var(--text3); text-decoration:none; text-transform:uppercase;
+  transition: color 0.2s;
+}
+nav a:hover { color:var(--gold); }
+.nav-cta {
+  padding:8px 20px;
+  border:1px solid var(--gold);
+  color:var(--gold) !important;
+  border-radius: var(--radius);
+  transition: background 0.2s !important;
+}
+.nav-cta:hover { background: var(--gold-dim) !important; color: var(--gold-light) !important; }
+
+/* ── HERO SECTION ── */
+.hero {
+  min-height: 100vh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding: 100px 24px 60px;
+  position:relative; overflow:hidden;
+}
+.hero-bg {
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 60%, rgba(200,164,90,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 20% 20%, rgba(200,164,90,0.03) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 30% at 80% 80%, rgba(200,164,90,0.03) 0%, transparent 60%);
+}
+.hero-ornament {
+  font-family:'Playfair Display', serif;
+  font-size:10px; letter-spacing:0.4em; color:var(--gold); opacity:0.6;
+  margin-bottom:24px;
+  animation: fadeDown 1s ease 0.2s both;
+}
+.hero-title {
+  font-family:'Playfair Display', serif;
+  font-size: clamp(52px, 10vw, 96px);
+  font-weight:700; line-height:0.95;
+  letter-spacing:-0.01em;
+  animation: fadeDown 1s ease 0.4s both;
+}
+.hero-title em { font-style:italic; color:var(--gold-light); }
+.hero-desc {
+  max-width:500px; margin:28px auto 0;
+  font-size:15px; color:var(--text2); line-height:1.7; font-weight:300;
+  animation: fadeDown 1s ease 0.6s both;
+}
+.hero-actions {
+  display:flex; gap:14px; justify-content:center; flex-wrap:wrap;
+  margin-top:40px;
+  animation: fadeDown 1s ease 0.8s both;
+}
+.btn-primary {
+  padding:14px 36px;
+  background: linear-gradient(135deg, #8a6820, #c8a45a);
+  color:#060606; font-family:'DM Mono', monospace;
+  font-size:11px; letter-spacing:0.2em; text-transform:uppercase;
+  border:none; border-radius:var(--radius); cursor:pointer;
+  text-decoration:none; display:inline-flex; align-items:center; gap:8px;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.btn-primary:hover { opacity:0.88; transform:translateY(-1px); }
+.btn-secondary {
+  padding:14px 36px;
+  background:transparent;
+  border:1px solid var(--border2);
+  color:var(--text2); font-family:'DM Mono', monospace;
+  font-size:11px; letter-spacing:0.2em; text-transform:uppercase;
+  border-radius:var(--radius); cursor:pointer; text-decoration:none;
+  display:inline-flex; align-items:center; gap:8px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-secondary:hover { border-color:var(--gold); color:var(--gold); }
+
+.hero-stats {
+  display:flex; gap:48px; justify-content:center; flex-wrap:wrap;
+  margin-top:64px; padding-top:40px;
+  border-top:1px solid var(--border);
+  animation: fadeDown 1s ease 1s both;
+}
+.stat { text-align:center; }
+.stat-num {
+  font-family:'Playfair Display', serif; font-size:32px;
+  color:var(--gold-light); display:block;
+}
+.stat-label {
+  font-family:'DM Mono', monospace; font-size:9px;
+  color:var(--text3); letter-spacing:0.2em; margin-top:4px;
+}
+
+@keyframes fadeDown {
+  from { opacity:0; transform:translateY(-20px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* ── FEATURES STRIP ── */
+.features-strip {
+  display:flex; overflow-x:auto; gap:0;
+  border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+  background:var(--surface);
+}
+.features-strip::-webkit-scrollbar { display:none; }
+.feature-item {
+  flex-shrink:0; padding:20px 32px;
+  display:flex; align-items:center; gap:12px;
+  border-right:1px solid var(--border);
+  min-width:200px;
+}
+.feature-icon { font-size:18px; }
+.feature-label { font-family:'DM Mono', monospace; font-size:10px; letter-spacing:0.15em; color:var(--text2); }
+
+/* ── MAIN APP ── */
+.app-section {
+  max-width:1100px; margin:0 auto; padding:80px 24px;
+  display:grid; grid-template-columns:1fr 380px; gap:32px; align-items:start;
+}
+@media(max-width:900px) { .app-section { grid-template-columns:1fr; } }
+
+/* Chat Panel */
+.chat-panel {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); overflow:hidden;
+  display:flex; flex-direction:column; height:680px;
+  position:relative;
+}
+.chat-panel::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.chat-header {
+  display:flex; align-items:center; gap:14px;
+  padding:18px 22px; border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.chat-av {
+  width:42px; height:42px; border-radius:50%;
+  background: linear-gradient(135deg, #2a1f0a, #7a5918);
+  border:1.5px solid var(--gold);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; flex-shrink:0; position:relative;
+}
+.chat-av::after {
+  content:'♛'; position:absolute; top:-9px; left:50%;
+  transform:translateX(-50%); font-size:10px; color:var(--gold);
+}
+.chat-header-info { flex:1; }
+.chat-name {
+  font-family:'Playfair Display', serif; font-size:16px;
+  color:var(--gold-light); font-weight:600;
+}
+.chat-status {
+  font-family:'DM Mono', monospace; font-size:9px;
+  color:var(--text3); letter-spacing:0.15em; margin-top:2px;
+}
+.online-dot {
+  width:8px; height:8px; border-radius:50%;
+  background:#4caf50; box-shadow:0 0 6px #4caf50;
+}
+
+.chat-messages {
+  flex:1; overflow-y:auto; padding:20px 18px;
+  display:flex; flex-direction:column; gap:18px;
+  scroll-behavior:smooth;
+}
+.chat-messages::-webkit-scrollbar { width:3px; }
+.chat-messages::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+
+.msg-row { display:flex; gap:10px; animation:msgIn 0.3s ease both; opacity:0; }
+.msg-row.user { flex-direction:row-reverse; }
+@keyframes msgIn {
+  from { opacity:0; transform:translateY(8px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.msg-av {
+  width:30px; height:30px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; flex-shrink:0; border:1px solid var(--border);
+}
+.msg-av.k { background:linear-gradient(135deg,#2a1f0a,#6b4f14); border-color:var(--gold); }
+.msg-av.u { background:var(--surface3); }
+
+.bubble {
+  max-width:75%; padding:12px 16px; border-radius:var(--radius);
+  font-size:14px; line-height:1.75; position:relative;
+}
+.bubble.k {
+  background:var(--surface2); border:1px solid var(--border);
+  border-left:2px solid var(--gold); color:var(--text);
+}
+.bubble.u {
+  background:var(--surface3); border:1px solid var(--border2);
+  border-right:2px solid var(--border2); color:#bbb; text-align:right;
+}
+.rating-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  margin-top:10px; padding:7px 14px;
+  background:rgba(200,164,90,0.07); border:1px solid rgba(200,164,90,0.25);
+  border-radius:var(--radius);
+  font-family:'DM Mono', monospace; font-size:11px; color:var(--gold-light);
+}
+.stars { color:var(--gold); letter-spacing:1px; }
+
+.img-preview-bubble {
+  max-width:180px; max-height:140px; border-radius:var(--radius);
+  border:1px solid var(--border); display:block; margin-bottom:8px;
+  object-fit:cover;
+}
+
+/* Shop this look section inside bubble */
+.shop-block {
+  margin-top:14px; padding-top:12px;
+  border-top:1px solid var(--border);
+}
+.shop-title {
+  font-family:'DM Mono', monospace; font-size:9px;
+  color:var(--text3); letter-spacing:0.2em; margin-bottom:10px;
+}
+.shop-links { display:flex; flex-wrap:wrap; gap:6px; }
+.shop-link {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:5px 10px; border-radius:var(--radius); font-size:11px;
+  font-family:'DM Mono', monospace; text-decoration:none;
+  transition:opacity 0.2s, transform 0.1s; cursor:pointer; border:none;
+}
+.shop-link:hover { opacity:0.8; transform:translateY(-1px); }
+.shop-link.amazon { background:rgba(255,153,0,0.12); color:#f90; border:1px solid rgba(255,153,0,0.3); }
+.shop-link.asos   { background:rgba(45,110,224,0.12); color:#6699ff; border:1px solid rgba(45,110,224,0.3); }
+.shop-link.myntra { background:rgba(255,63,108,0.12); color:#ff6b91; border:1px solid rgba(255,63,108,0.3); }
+
+/* Typing indicator */
+.typing { display:flex; gap:10px; align-items:center; animation:msgIn 0.3s ease both; opacity:0; }
+.typing-bub {
+  background:var(--surface2); border:1px solid var(--border);
+  border-left:2px solid var(--gold); padding:12px 18px; border-radius:var(--radius);
+  display:flex; gap:5px; align-items:center;
+}
+.tdot { width:5px; height:5px; border-radius:50%; background:var(--gold); opacity:0.4; animation:tdot 1.2s ease infinite; }
+.tdot:nth-child(2){animation-delay:0.2s} .tdot:nth-child(3){animation-delay:0.4s}
+@keyframes tdot { 0%,100%{opacity:0.3;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
+
+/* Chat input */
+.chat-input-area {
+  border-top:1px solid var(--border); padding:14px 16px;
+  background:var(--surface); flex-shrink:0;
+}
+.input-row {
+  display:flex; align-items:flex-end; gap:8px;
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:var(--radius); padding:10px 12px;
+  transition:border-color 0.2s;
+}
+.input-row:focus-within { border-color:rgba(200,164,90,0.4); }
+textarea {
+  flex:1; background:transparent; border:none; outline:none;
+  color:var(--text); font-family:'Jost', sans-serif; font-size:14px;
+  resize:none; max-height:90px; line-height:1.5; min-height:22px;
+}
+textarea::placeholder { color:var(--text3); font-style:italic; }
+.ibtns { display:flex; gap:4px; align-items:center; }
+.ibtn {
+  background:none; border:none; cursor:pointer; color:var(--text3);
+  padding:4px; border-radius:var(--radius);
+  display:flex; align-items:center; justify-content:center;
+  transition:color 0.2s;
+}
+.ibtn:hover { color:var(--gold); }
+.send-btn {
+  width:34px; height:34px; border-radius:var(--radius);
+  background:linear-gradient(135deg,#7a5918,#c8a45a);
+  border:none; cursor:pointer; display:flex; align-items:center;
+  justify-content:center; color:#060606; flex-shrink:0;
+  transition:opacity 0.2s, transform 0.1s;
+}
+.send-btn:hover { opacity:0.85; transform:scale(1.05); }
+.send-btn:active { transform:scale(0.95); }
+.chat-hint {
+  font-family:'DM Mono', monospace; font-size:9px; color:var(--text3);
+  text-align:center; margin-top:8px; letter-spacing:0.1em;
+}
+#imgInput { display:none; }
+
+/* Quick chips */
+.chips {
+  padding:0 18px 14px; display:flex; flex-wrap:wrap; gap:6px; flex-shrink:0;
+}
+.chip {
+  padding:5px 12px; border:1px solid var(--border2);
+  background:var(--surface2); color:var(--text3);
+  font-family:'DM Mono', monospace; font-size:9px; letter-spacing:0.1em;
+  border-radius:var(--radius); cursor:pointer; transition:all 0.2s;
+}
+.chip:hover { border-color:var(--gold); color:var(--gold); }
+
+/* ── SIDE PANEL ── */
+.side-panel { display:flex; flex-direction:column; gap:20px; }
+
+.panel-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); overflow:hidden;
+}
+.panel-card-header {
+  padding:14px 18px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+}
+.panel-card-title {
+  font-family:'Playfair Display', serif; font-size:14px; color:var(--gold-light);
+}
+.panel-card-sub {
+  font-family:'DM Mono', monospace; font-size:9px; color:var(--text3); letter-spacing:0.15em;
+}
+.panel-card-body { padding:16px 18px; }
+
+/* Style Tips card */
+.tip-item {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:10px 0; border-bottom:1px solid var(--border);
+}
+.tip-item:last-child { border-bottom:none; }
+.tip-num {
+  font-family:'Playfair Display', serif; font-size:20px;
+  color:var(--gold); opacity:0.4; line-height:1; flex-shrink:0;
+}
+.tip-text { font-size:13px; color:var(--text2); line-height:1.6; }
+
+/* Trending card */
+.trend-tags { display:flex; flex-wrap:wrap; gap:6px; }
+.trend-tag {
+  padding:5px 12px;
+  background:var(--gold-dim); border:1px solid rgba(200,164,90,0.2);
+  color:var(--gold); font-family:'DM Mono', monospace;
+  font-size:9px; letter-spacing:0.1em; border-radius:var(--radius);
+}
+
+/* Shop featured card */
+.shop-featured { display:flex; flex-direction:column; gap:10px; }
+.shop-feat-item {
+  display:flex; align-items:center; gap:12px; padding:10px;
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:var(--radius); text-decoration:none;
+  transition:border-color 0.2s;
+}
+.shop-feat-item:hover { border-color:var(--gold); }
+.shop-feat-emoji { font-size:22px; flex-shrink:0; }
+.shop-feat-info { flex:1; min-width:0; }
+.shop-feat-name { font-size:12px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.shop-feat-store { font-family:'DM Mono', monospace; font-size:9px; color:var(--text3); margin-top:2px; }
+.shop-feat-badge {
+  font-family:'DM Mono', monospace; font-size:8px; padding:3px 8px;
+  border-radius:var(--radius); flex-shrink:0;
+}
+.shop-feat-badge.amz { background:rgba(255,153,0,0.1); color:#f90; border:1px solid rgba(255,153,0,0.3); }
+.shop-feat-badge.aso { background:rgba(45,110,224,0.1); color:#6699ff; border:1px solid rgba(45,110,224,0.3); }
+.shop-feat-badge.myn { background:rgba(255,63,108,0.1); color:#ff6b91; border:1px solid rgba(255,63,108,0.3); }
+
+/* ── HOW IT WORKS ── */
+.how-section {
+  padding:80px 24px; border-top:1px solid var(--border);
+  background:var(--surface);
+}
+.section-label {
+  font-family:'DM Mono', monospace; font-size:10px; color:var(--gold);
+  letter-spacing:0.3em; text-align:center; margin-bottom:12px;
+}
+.section-title {
+  font-family:'Playfair Display', serif; font-size:clamp(28px,5vw,42px);
+  text-align:center; font-weight:600; margin-bottom:60px;
+}
+.steps {
+  max-width:900px; margin:0 auto;
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:32px;
+}
+.step { text-align:center; }
+.step-num {
+  font-family:'Playfair Display', serif; font-size:52px;
+  color:var(--gold); opacity:0.25; line-height:1; margin-bottom:12px;
+}
+.step-icon { font-size:28px; margin-bottom:12px; }
+.step-title { font-family:'Playfair Display', serif; font-size:18px; margin-bottom:8px; }
+.step-desc { font-size:13px; color:var(--text2); line-height:1.7; }
+
+/* ── FOOTER ── */
+footer {
+  border-top:1px solid var(--border); padding:32px 40px;
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
+  background:var(--surface);
+}
+.footer-logo {
+  font-family:'Playfair Display', serif; font-size:16px;
+  color:var(--gold-light); font-weight:600; letter-spacing:0.1em;
+}
+.footer-copy { font-family:'DM Mono', monospace; font-size:9px; color:var(--text3); letter-spacing:0.15em; }
+.footer-links { display:flex; gap:24px; }
+.footer-links a {
+  font-family:'DM Mono', monospace; font-size:9px; color:var(--text3);
+  text-decoration:none; letter-spacing:0.15em; transition:color 0.2s;
+}
+.footer-links a:hover { color:var(--gold); }
+
+/* Welcome state in chat */
+.welcome-state {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center; padding:30px 20px;
+}
+.welcome-crown { font-size:44px; margin-bottom:10px; }
+.welcome-t { font-family:'Playfair Display', serif; font-size:18px; color:var(--gold-light); }
+.welcome-s { font-family:'DM Mono', monospace; font-size:9px; color:var(--text3); letter-spacing:0.15em; margin-top:6px; }
+
+/* Responsive nav */
+@media(max-width:600px) {
+  .site-header { padding:14px 20px; }
+  nav { display:none; }
+  .hero-stats { gap:24px; }
+  .app-section { padding:40px 16px; }
+  footer { flex-direction:column; text-align:center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="site-header">
+  <a href="#" class="logo">
+    <span class="logo-crown">♛</span>
+    <div>
+      <span class="logo-text">STYLE COURT</span>
+      <span class="logo-sub">YOUR FASHION MONARCHY</span>
+    </div>
+  </a>
+  <nav>
+    <a href="#app">The Court</a>
+    <a href="#how">How It Works</a>
+    <a href="#app" class="nav-cta">Enter the Court →</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-ornament">✦ &nbsp; THE COURT OF STYLE IS NOW IN SESSION &nbsp; ✦</div>
+  <h1 class="hero-title">Your Look.<br><em>Judged.</em></h1>
+  <p class="hero-desc">Describe your outfit or upload a photo. The Fashion King will rate your style, suggest killer combinations, celebrate your body — and send you straight to the best shops.</p>
+  <div class="hero-actions">
+    <a href="#app" class="btn-primary">♛ &nbsp; Enter the Court</a>
+    <a href="#how" class="btn-secondary">How It Works →</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-num">10</span><span class="stat-label">STYLE RATING</span></div>
+    <div class="stat"><span class="stat-num">3</span><span class="stat-label">SHOP PLATFORMS</span></div>
+    <div class="stat"><span class="stat-num">∞</span><span class="stat-label">FASHION VERDICTS</span></div>
+  </div>
+</section>
+
+<!-- FEATURES STRIP -->
+<div class="features-strip">
+  <div class="feature-item"><span class="feature-icon">💬</span><span class="feature-label">Outfit Advice</span></div>
+  <div class="feature-item"><span class="feature-icon">📷</span><span class="feature-label">Photo Analysis</span></div>
+  <div class="feature-item"><span class="feature-icon">⭐</span><span class="feature-label">Style Rating /10</span></div>
+  <div class="feature-item"><span class="feature-icon">🛍️</span><span class="feature-label">Shop This Look</span></div>
+  <div class="feature-item"><span class="feature-icon">💪</span><span class="feature-label">Body Confidence</span></div>
+  <div class="feature-item"><span class="feature-icon">✨</span><span class="feature-label">Mix & Match</span></div>
+</div>
+
+<!-- MAIN APP -->
+<section id="app" class="app-section">
+
+  <!-- Chat Panel -->
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div class="chat-av">👑</div>
+      <div class="chat-header-info">
+        <div class="chat-name">The Fashion King</div>
+        <div class="chat-status">STYLE COURT IS IN SESSION</div>
+      </div>
+      <div class="online-dot"></div>
+      <button onclick="showKeyModal()" title="Update API Key" style="background:none;border:1px solid #2a2a2a;color:#555;font-size:9px;padding:3px 8px;border-radius:2px;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:0.1em;">⚙ KEY</button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="welcome-state" id="welcomeState">
+        <div class="welcome-crown">♛</div>
+        <div class="welcome-t">The Court Awaits Your Look</div>
+        <div class="welcome-s">DESCRIBE YOUR OUTFIT · UPLOAD A PHOTO · RECEIVE YOUR VERDICT</div>
+      </div>
+    </div>
+
+    <div class="chips" id="chipsArea">
+      <div class="chip" onclick="quickSend('Rate my all-black outfit — black tee, black jeans, white sneakers.')">Rate my all-black fit</div>
+      <div class="chip" onclick="quickSend('I\'m plus size. What styles make me look and feel amazing?')">Style for my body type</div>
+      <div class="chip" onclick="quickSend('Give me a bold night-out outfit combination.')">Night out combo</div>
+      <div class="chip" onclick="quickSend('I mix florals with stripes. Is that a fashion crime?')">Pattern mixing?</div>
+    </div>
+
+    <div class="chat-input-area">
+      <div class="input-row">
+        <div class="ibtns">
+          <label for="imgInput" class="ibtn" title="Upload outfit photo">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          </label>
+          <input type="file" id="imgInput" accept="image/*" onchange="handleImg(event)"/>
+        </div>
+        <textarea id="msgInput" placeholder="Describe your look, darling…" rows="1"
+          oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+        <button class="send-btn" onclick="sendMessage()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+        </button>
+      </div>
+      <div class="chat-hint">ENTER TO SEND · SHIFT+ENTER FOR NEW LINE · 📷 UPLOAD YOUR OUTFIT</div>
+    </div>
+  </div>
+
+  <!-- Side Panel -->
+  <div class="side-panel">
+
+    <!-- Style Tips -->
+    <div class="panel-card">
+      <div class="panel-card-header">
+        <div>
+          <div class="panel-card-title">Royal Style Edicts</div>
+          <div class="panel-card-sub">THE KING'S COMMANDMENTS</div>
+        </div>
+      </div>
+      <div class="panel-card-body">
+        <div class="tip-item">
+          <div class="tip-num">01</div>
+          <div class="tip-text">Fit is everything. A ₹200 shirt that fits perfectly beats a ₹2000 one that doesn't.</div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-num">02</div>
+          <div class="tip-text">Every body type is runway-ready. Dress for the body you have, not the one you think you should.</div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-num">03</div>
+          <div class="tip-text">One statement piece per outfit. Let it speak — don't let it shout.</div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-num">04</div>
+          <div class="tip-text">Shoes make the verdict. Dress up or down with footwear alone.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trending Now -->
+    <div class="panel-card">
+      <div class="panel-card-header">
+        <div>
+          <div class="panel-card-title">Trending at Court</div>
+          <div class="panel-card-sub">SEASON'S DECREE · 2026</div>
+        </div>
+      </div>
+      <div class="panel-card-body">
+        <div class="trend-tags">
+          <span class="trend-tag">QUIET LUXURY</span>
+          <span class="trend-tag">BARREL LEG</span>
+          <span class="trend-tag">LINEN SETS</span>
+          <span class="trend-tag">DOPAMINE DRESSING</span>
+          <span class="trend-tag">INDIE SLEAZE</span>
+          <span class="trend-tag">BALLET CORE</span>
+          <span class="trend-tag">UTILITY CHIC</span>
+          <span class="trend-tag">METALLICS</span>
+          <span class="trend-tag">BOHO REVIVAL</span>
+          <span class="trend-tag">MONOCHROME</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shop Featured -->
+    <div class="panel-card">
+      <div class="panel-card-header">
+        <div>
+          <div class="panel-card-title">Shop the Court</div>
+          <div class="panel-card-sub">CURATED PICKS · ACROSS PLATFORMS</div>
+        </div>
+      </div>
+      <div class="panel-card-body">
+        <div class="shop-featured">
+          <a href="https://www.amazon.in/s?k=linen+co-ord+set+men+women" target="_blank" class="shop-feat-item">
+            <span class="shop-feat-emoji">👔</span>
+            <div class="shop-feat-info">
+              <div class="shop-feat-name">Linen Co-ord Sets</div>
+              <div class="shop-feat-store">Trending this season</div>
+            </div>
+            <span class="shop-feat-badge amz">AMAZON</span>
+          </a>
+          <a href="https://www.asos.com/search/?q=barrel+leg+jeans" target="_blank" class="shop-feat-item">
+            <span class="shop-feat-emoji">👖</span>
+            <div class="shop-feat-info">
+              <div class="shop-feat-name">Barrel Leg Jeans</div>
+              <div class="shop-feat-store">The silhouette of 2026</div>
+            </div>
+            <span class="shop-feat-badge aso">ASOS</span>
+          </a>
+          <a href="https://www.myntra.com/metallic-dresses" target="_blank" class="shop-feat-item">
+            <span class="shop-feat-emoji">✨</span>
+            <div class="shop-feat-info">
+              <div class="shop-feat-name">Metallic Dresses</div>
+              <div class="shop-feat-store">Disco court approved</div>
+            </div>
+            <span class="shop-feat-badge myn">MYNTRA</span>
+          </a>
+          <a href="https://www.amazon.in/s?k=white+sneakers+men+women" target="_blank" class="shop-feat-item">
+            <span class="shop-feat-emoji">👟</span>
+            <div class="shop-feat-info">
+              <div class="shop-feat-name">Classic White Sneakers</div>
+              <div class="shop-feat-store">The eternal verdict</div>
+            </div>
+            <span class="shop-feat-badge amz">AMAZON</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="how-section">
+  <div class="section-label">✦ &nbsp; THE PROCESS &nbsp; ✦</div>
+  <h2 class="section-title">How the Court Works</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-icon">💬</div>
+      <div class="step-title">Describe or Upload</div>
+      <div class="step-desc">Tell the King what you're wearing in words, or upload a photo of your outfit directly.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-icon">👑</div>
+      <div class="step-title">Receive Your Verdict</div>
+      <div class="step-desc">Get a dramatic, warm, expert critique with a star rating out of 10 and specific suggestions.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-icon">🛍️</div>
+      <div class="step-title">Shop This Look</div>
+      <div class="step-desc">Every verdict includes curated shopping links across Amazon, ASOS, and Myntra to complete your look.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-icon">💪</div>
+      <div class="step-title">Walk Confident</div>
+      <div class="step-desc">Leave every session feeling celebrated, styled, and ready to own every room you enter.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">♛ STYLE COURT</div>
+  <div class="footer-copy">© 2026 STYLE COURT · ALL LOOKS JUDGED WITH LOVE</div>
+  <div class="footer-links">
+    <a href="#app">The Court</a>
+    <a href="#how">How It Works</a>
+  </div>
+</footer>
+
+<script>
+const API_URL = '/api/chat';
+
+const SYSTEM = `You are THE FASHION KING presiding over STYLE COURT — a legendary style monarch who blends:
+- Bold, theatrical runway judge energy (grand declarations, dramatic reactions)
+- Chic Vogue editor sophistication (refined taste, sharp editorial eye)
+- Fun, warm best-friend playfulness (encouraging, real, never cruel)
+
+You adapt to the user's tone: playful = match their energy; serious = be sophisticated.
+
+CAPABILITIES:
+1. Outfit advice from text — specific, creative, actionable
+2. Photo analysis — describe what you see, give detailed fashion critique
+3. Outfit combination suggestions — pair brilliantly with reasoning
+4. Style rating /10 — ALWAYS include in this format: ★ X/10 — [witty reason]
+5. Body confidence & body type styling — CELEBRATE every body. Give flattering tips with joy and zero judgment. All bodies are runway-ready.
+6. Shop this look — After EVERY response, always include a SHOP THIS LOOK section with 3-4 specific product search suggestions. Format exactly like this (include all three platforms):
+
+SHOP_THIS_LOOK:
+[item name]|[search query for Amazon]|amazon
+[item name]|[search query for ASOS]|asos
+[item name]|[search query for Myntra]|myntra
+[item name]|[search query for Amazon]|amazon
+END_SHOP
+
+Make search queries specific and realistic (e.g. "white linen shirt men oversized", "barrel leg jeans women high waist", "block heel ankle boots black").
+
+VOICE:
+- Dramatic but loving: "Oh darling—", "The AUDACITY (and I mean that as the highest compliment)"
+- Use fashion words naturally: silhouette, tonal, sartorial, elevated, draped
+- Punchy — max 3 paragraphs before the shop section
+- Always end with one bold styling suggestion or confidence affirmation`;
+
+let history = [];
+let pendingImage = null;
+let busy = false;
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+}
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+function quickSend(t) {
+  document.getElementById('msgInput').value = t;
+  sendMessage();
+}
+function handleImg(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    pendingImage = { data: ev.target.result.split(',')[1], type: file.type };
+    const inp = document.getElementById('msgInput');
+    if (!inp.value.trim()) inp.value = 'I uploaded my outfit — what does the court say?';
+    inp.focus();
+  };
+  r.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function hideWelcome() {
+  const w = document.getElementById('welcomeState');
+  if (w) w.remove();
+  const c = document.getElementById('chipsArea');
+  if (c) c.style.display = 'none';
+}
+
+function parseShopLinks(text) {
+  const match = text.match(/SHOP_THIS_LOOK:([\s\S]*?)END_SHOP/);
+  if (!match) return { clean: text, links: [] };
+  const block = match[1].trim();
+  const links = [];
+  block.split('\n').forEach(line => {
+    const parts = line.split('|');
+    if (parts.length === 3) {
+      const [name, query, platform] = parts.map(s => s.trim());
+      let url = '#'; let cls = '';
+      if (platform === 'amazon') { url = `https://www.amazon.in/s?k=${encodeURIComponent(query)}`; cls = 'amazon'; }
+      if (platform === 'asos')   { url = `https://www.asos.com/search/?q=${encodeURIComponent(query)}`; cls = 'asos'; }
+      if (platform === 'myntra') { url = `https://www.myntra.com/${encodeURIComponent(query.replace(/ /g,'-'))}`; cls = 'myntra'; }
+      links.push({ name, url, cls, platform: platform.toUpperCase() });
+    }
+  });
+  const clean = text.replace(/SHOP_THIS_LOOK:[\s\S]*?END_SHOP/, '').trim();
+  return { clean, links };
+}
+
+function buildShopBlock(links) {
+  if (!links.length) return '';
+  const btns = links.map(l =>
+    `<a href="${l.url}" target="_blank" class="shop-link ${l.cls}">🛍 ${l.name} <span style="opacity:0.6;font-size:9px">${l.platform}</span></a>`
+  ).join('');
+  return `<div class="shop-block"><div class="shop-title">✦ &nbsp; SHOP THIS LOOK &nbsp; ✦</div><div class="shop-links">${btns}</div></div>`;
+}
+
+function formatText(txt) {
+  return txt
+    .replace(/★\s*(\d+)\/10([^\n]*)/g, (_, score, reason) => {
+      const filled = '★'.repeat(Math.min(parseInt(score),10));
+      const empty  = '☆'.repeat(Math.max(0, 10 - parseInt(score)));
+      return `<div class="rating-badge"><span class="stars">${filled}${empty}</span> ${score}/10${reason}</div>`;
+    })
+    .replace(/\n/g, '<br>');
+}
+
+function addMsg(role, text, imgSrc, shopLinks) {
+  hideWelcome();
+  const wrap = document.getElementById('chatMessages');
+  const row = document.createElement('div');
+  row.className = `msg-row ${role === 'assistant' ? '' : 'user'}`;
+
+  const av = document.createElement('div');
+  av.className = `msg-av ${role === 'assistant' ? 'k' : 'u'}`;
+  av.textContent = role === 'assistant' ? '♛' : '✦';
+
+  const bub = document.createElement('div');
+  bub.className = `bubble ${role === 'assistant' ? 'k' : 'u'}`;
+
+  if (imgSrc) {
+    const img = document.createElement('img');
+    img.src = imgSrc; img.className = 'img-preview-bubble';
+    bub.appendChild(img);
+  }
+
+  const txt = document.createElement('div');
+  txt.innerHTML = formatText(text);
+  bub.appendChild(txt);
+
+  if (shopLinks && shopLinks.length) {
+    const shopEl = document.createElement('div');
+    shopEl.innerHTML = buildShopBlock(shopLinks);
+    bub.appendChild(shopEl);
+  }
+
+  row.appendChild(av); row.appendChild(bub);
+  wrap.appendChild(row);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function showTyping() {
+  hideWelcome();
+  const wrap = document.getElementById('chatMessages');
+  const row = document.createElement('div');
+  row.className = 'typing'; row.id = 'typingRow';
+  row.innerHTML = `<div class="msg-av k">♛</div><div class="typing-bub"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
+  wrap.appendChild(row); wrap.scrollTop = wrap.scrollHeight;
+}
+function removeTyping() { const t = document.getElementById('typingRow'); if(t) t.remove(); }
+
+async function sendMessage() {
+  const inp = document.getElementById('msgInput');
+  const text = inp.value.trim();
+  if (!text && !pendingImage) return;
+  if (busy) return;
+
+  const imgSrc = pendingImage ? `data:${pendingImage.type};base64,${pendingImage.data}` : null;
+  addMsg('user', text || '(photo uploaded)', imgSrc, null);
+  inp.value = ''; inp.style.height = 'auto';
+
+  let content;
+  if (pendingImage) {
+    content = [
+      { type: 'image', source: { type: 'base64', media_type: pendingImage.type, data: pendingImage.data } },
+      { type: 'text', text: text || 'I uploaded my outfit — what does the court say?' }
+    ];
+  } else { content = text; }
+
+  history.push({ role: 'user', content });
+  pendingImage = null;
+  busy = true; showTyping();
+
+  // Build messages for Groq via secure backend
+  const groqMessages = [{ role: 'system', content: SYSTEM }];
+  history.forEach(m => {
+    if (Array.isArray(m.content)) {
+      groqMessages.push({ role: m.role, content: m.content.filter(c => c.type === 'text').map(c => c.text).join(' ') });
+    } else {
+      groqMessages.push({ role: m.role, content: m.content });
+    }
+  });
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: groqMessages })
+    });
+    const data = await res.json();
+    removeTyping();
+    if (data.error) {
+      addMsg('assistant', '\u26a0\ufe0f ' + (data.error.message || 'Something went wrong — try again!'), null, null);
+    } else {
+      const raw = data.choices?.[0]?.message?.content || "Darling, the court line is busy — try again!";
+      const { clean, links } = parseShopLinks(raw);
+      history.push({ role:'assistant', content: raw });
+      addMsg('assistant', clean, null, links);
+    }
+  } catch(err) {
+    removeTyping();
+    addMsg('assistant', 'Connection interrupted — please try again!', null, null);
+  }
+  busy = false;
+}
+
+function showKeyModal() { document.getElementById('keyModal').style.display = 'flex'; }
+function saveKey() {
+  const k = document.getElementById('keyInput').value.trim();
+  if (!k.startsWith('gsk_')) { document.getElementById('keyError').textContent = '\u26a0\ufe0f Must start with gsk_...'; return; }
+  localStorage.setItem('sc_gemini_key', k);
+  location.reload();
+}
+</script>
+
+<!-- API Key Modal -->
+<div id="keyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9000;align-items:center;justify-content:center;">
+  <div style="background:#0e0e0e;border:1px solid #2a2a2a;border-top:2px solid #c8a45a;padding:36px;max-width:440px;width:90%;border-radius:2px;">
+    <div style="font-family:'Playfair Display',serif;font-size:22px;color:#c8a45a;margin-bottom:6px;">♛ Enter Your Groq API Key</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:#555;letter-spacing:0.15em;margin-bottom:20px;">FREE · NO REGION LIMITS · STORED IN YOUR BROWSER</div>
+    <p style="font-size:13px;color:#888;line-height:1.7;margin-bottom:20px;">Get your FREE key at <a href="https://console.groq.com" target="_blank" style="color:#c8a45a;">console.groq.com</a> → Get API Key → Create API Key</p>
+    <input id="keyInput" type="password" placeholder="gsk_..." style="width:100%;background:#161616;border:1px solid #2a2a2a;color:#ede9e1;font-family:'DM Mono',monospace;font-size:12px;padding:12px 14px;border-radius:2px;outline:none;margin-bottom:8px;"/>
+    <div id="keyError" style="color:#f55;font-size:11px;min-height:18px;margin-bottom:12px;"></div>
+    <button onclick="saveKey()" style="width:100%;padding:13px;background:linear-gradient(135deg,#7a5918,#c8a45a);border:none;color:#060606;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;cursor:pointer;border-radius:2px;">ENTER THE COURT →</button>
+  </div>
+</div>
+</body>
+</html>
