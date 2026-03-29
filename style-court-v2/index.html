@@ -554,6 +554,7 @@ footer {
         <div class="chat-status">STYLE COURT IS IN SESSION</div>
       </div>
       <div class="online-dot"></div>
+      <button onclick="showKeyModal()" title="Update API Key" style="background:none;border:1px solid #2a2a2a;color:#555;font-size:9px;padding:3px 8px;border-radius:2px;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:0.1em;">⚙ KEY</button>
     </div>
 
     <div class="chat-messages" id="chatMessages">
@@ -736,7 +737,9 @@ footer {
 </footer>
 
 <script>
-const API_URL = "/api/chat"; // Secure backend — API key is hidden on the server
+const API_URL = "https://api.anthropic.com/v1/messages";
+let USER_API_KEY = localStorage.getItem("sc_api_key") || "";
+window.addEventListener('load', () => { if (!USER_API_KEY) setTimeout(showKeyModal, 800); });
 
 const SYSTEM = `You are THE FASHION KING presiding over STYLE COURT — a legendary style monarch who blends:
 - Bold, theatrical runway judge energy (grand declarations, dramatic reactions)
@@ -907,10 +910,22 @@ async function sendMessage() {
   pendingImage = null;
   busy = true; showTyping();
 
+  if (!USER_API_KEY) {
+    removeTyping();
+    busy = false;
+    showKeyModal();
+    return;
+  }
+
   try {
     const res = await fetch(API_URL, {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': USER_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
         model:'claude-sonnet-4-20250514',
         max_tokens:1200,
@@ -920,16 +935,42 @@ async function sendMessage() {
     });
     const data = await res.json();
     removeTyping();
-    const raw = data.content?.map(b => b.text||'').join('') || "Darling, the court line is busy — try again in a moment!";
-    const { clean, links } = parseShopLinks(raw);
-    history.push({ role:'assistant', content: raw });
-    addMsg('assistant', clean, null, links);
+    if (data.error) {
+      addMsg('assistant', '\u26a0\ufe0f API Key issue: ' + (data.error.message || 'Invalid key.'), null, null);
+    } else {
+      const raw = data.content?.map(b => b.text||'').join('') || "Darling, the court line is busy — try again!";
+      const { clean, links } = parseShopLinks(raw);
+      history.push({ role:'assistant', content: raw });
+      addMsg('assistant', clean, null, links);
+    }
   } catch(err) {
     removeTyping();
-    addMsg('assistant', 'Darling, the royal connection seems interrupted. Please try again — the court is waiting!', null, null);
+    addMsg('assistant', 'Connection interrupted — please try again!', null, null);
   }
   busy = false;
 }
+
+function showKeyModal() { document.getElementById('keyModal').style.display = 'flex'; }
+function saveKey() {
+  const k = document.getElementById('keyInput').value.trim();
+  if (!k.startsWith('sk-ant-')) { document.getElementById('keyError').textContent = '\u26a0\ufe0f Must start with sk-ant-'; return; }
+  USER_API_KEY = k;
+  localStorage.setItem('sc_api_key', k);
+  document.getElementById('keyModal').style.display = 'none';
+  addMsg('assistant', 'The court is now open, darling! \u265b Ask me anything about your style!', null, null);
+}
 </script>
+
+<!-- API Key Modal -->
+<div id="keyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9000;align-items:center;justify-content:center;">
+  <div style="background:#0e0e0e;border:1px solid #2a2a2a;border-top:2px solid #c8a45a;padding:36px;max-width:440px;width:90%;border-radius:2px;">
+    <div style="font-family:'Playfair Display',serif;font-size:22px;color:#c8a45a;margin-bottom:6px;">♛ Enter Your API Key</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:#555;letter-spacing:0.15em;margin-bottom:20px;">YOUR KEY IS STORED IN YOUR BROWSER ONLY</div>
+    <p style="font-size:13px;color:#888;line-height:1.7;margin-bottom:20px;">Get your free key at <a href="https://console.anthropic.com" target="_blank" style="color:#c8a45a;">console.anthropic.com</a> → API Keys → Create Key</p>
+    <input id="keyInput" type="password" placeholder="sk-ant-api03-..." style="width:100%;background:#161616;border:1px solid #2a2a2a;color:#ede9e1;font-family:'DM Mono',monospace;font-size:12px;padding:12px 14px;border-radius:2px;outline:none;margin-bottom:8px;"/>
+    <div id="keyError" style="color:#f55;font-size:11px;min-height:18px;margin-bottom:12px;"></div>
+    <button onclick="saveKey()" style="width:100%;padding:13px;background:linear-gradient(135deg,#7a5918,#c8a45a);border:none;color:#060606;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;cursor:pointer;border-radius:2px;">ENTER THE COURT →</button>
+  </div>
+</div>
 </body>
 </html>
