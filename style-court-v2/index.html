@@ -737,9 +737,8 @@ footer {
 </footer>
 
 <script>
-const API_URL = "https://api.anthropic.com/v1/messages";
-let USER_API_KEY = localStorage.getItem("sc_api_key") || "";
-window.addEventListener('load', () => { if (!USER_API_KEY) setTimeout(showKeyModal, 800); });
+const GEMINI_KEY = 'AIzaSyCoL8UBm1A0mn9K9eik3RK0vBoH58YucYI'; // <-- paste your AIza... key here
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 const SYSTEM = `You are THE FASHION KING presiding over STYLE COURT — a legendary style monarch who blends:
 - Bold, theatrical runway judge energy (grand declarations, dramatic reactions)
@@ -910,35 +909,32 @@ async function sendMessage() {
   pendingImage = null;
   busy = true; showTyping();
 
-  if (!USER_API_KEY) {
-    removeTyping();
-    busy = false;
-    showKeyModal();
-    return;
-  }
+  // Build Gemini conversation from history
+  const geminiContents = history.map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: Array.isArray(m.content)
+      ? m.content.map(c => c.type === 'image'
+          ? { inline_data: { mime_type: c.source.media_type, data: c.source.data } }
+          : { text: c.text || '' })
+      : [{ text: m.content }]
+  }));
 
   try {
-    const res = await fetch(API_URL, {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key': USER_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
+    const res = await fetch(GEMINI_URL + '?key=' + GEMINI_KEY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1200,
-        system: SYSTEM,
-        messages: history
+        system_instruction: { parts: [{ text: SYSTEM }] },
+        contents: geminiContents,
+        generationConfig: { maxOutputTokens: 1200, temperature: 0.9 }
       })
     });
     const data = await res.json();
     removeTyping();
     if (data.error) {
-      addMsg('assistant', '\u26a0\ufe0f API Key issue: ' + (data.error.message || 'Invalid key.'), null, null);
+      addMsg('assistant', '\u26a0\ufe0f ' + (data.error.message || 'API error — check your key.'), null, null);
     } else {
-      const raw = data.content?.map(b => b.text||'').join('') || "Darling, the court line is busy — try again!";
+      const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || "Darling, the court line is busy — try again!";
       const { clean, links } = parseShopLinks(raw);
       history.push({ role:'assistant', content: raw });
       addMsg('assistant', clean, null, links);
@@ -953,21 +949,19 @@ async function sendMessage() {
 function showKeyModal() { document.getElementById('keyModal').style.display = 'flex'; }
 function saveKey() {
   const k = document.getElementById('keyInput').value.trim();
-  if (!k.startsWith('sk-ant-')) { document.getElementById('keyError').textContent = '\u26a0\ufe0f Must start with sk-ant-'; return; }
-  USER_API_KEY = k;
-  localStorage.setItem('sc_api_key', k);
-  document.getElementById('keyModal').style.display = 'none';
-  addMsg('assistant', 'The court is now open, darling! \u265b Ask me anything about your style!', null, null);
+  if (!k.startsWith('AIza')) { document.getElementById('keyError').textContent = '\u26a0\ufe0f Must start with AIza...'; return; }
+  localStorage.setItem('sc_gemini_key', k);
+  location.reload();
 }
 </script>
 
 <!-- API Key Modal -->
 <div id="keyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9000;align-items:center;justify-content:center;">
   <div style="background:#0e0e0e;border:1px solid #2a2a2a;border-top:2px solid #c8a45a;padding:36px;max-width:440px;width:90%;border-radius:2px;">
-    <div style="font-family:'Playfair Display',serif;font-size:22px;color:#c8a45a;margin-bottom:6px;">♛ Enter Your API Key</div>
-    <div style="font-family:'DM Mono',monospace;font-size:10px;color:#555;letter-spacing:0.15em;margin-bottom:20px;">YOUR KEY IS STORED IN YOUR BROWSER ONLY</div>
-    <p style="font-size:13px;color:#888;line-height:1.7;margin-bottom:20px;">Get your free key at <a href="https://console.anthropic.com" target="_blank" style="color:#c8a45a;">console.anthropic.com</a> → API Keys → Create Key</p>
-    <input id="keyInput" type="password" placeholder="sk-ant-api03-..." style="width:100%;background:#161616;border:1px solid #2a2a2a;color:#ede9e1;font-family:'DM Mono',monospace;font-size:12px;padding:12px 14px;border-radius:2px;outline:none;margin-bottom:8px;"/>
+    <div style="font-family:'Playfair Display',serif;font-size:22px;color:#c8a45a;margin-bottom:6px;">♛ Enter Your Gemini API Key</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:#555;letter-spacing:0.15em;margin-bottom:20px;">FREE · NO CREDIT CARD · STORED IN YOUR BROWSER</div>
+    <p style="font-size:13px;color:#888;line-height:1.7;margin-bottom:20px;">Get your FREE key at <a href="https://aistudio.google.com" target="_blank" style="color:#c8a45a;">aistudio.google.com</a> → Get API Key → Create API Key</p>
+    <input id="keyInput" type="password" placeholder="AIzaSy..." style="width:100%;background:#161616;border:1px solid #2a2a2a;color:#ede9e1;font-family:'DM Mono',monospace;font-size:12px;padding:12px 14px;border-radius:2px;outline:none;margin-bottom:8px;"/>
     <div id="keyError" style="color:#f55;font-size:11px;min-height:18px;margin-bottom:12px;"></div>
     <button onclick="saveKey()" style="width:100%;padding:13px;background:linear-gradient(135deg,#7a5918,#c8a45a);border:none;color:#060606;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;cursor:pointer;border-radius:2px;">ENTER THE COURT →</button>
   </div>
